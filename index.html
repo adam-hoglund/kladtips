@@ -7,81 +7,115 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 10px;
+      margin: 0 auto;
+      padding: 20px;
       background: #f9fbfd;
       color: #333;
-      max-width: 480px;
-      overflow-x: hidden;
+      max-width: 500px;
     }
-    h1, p {
-      margin: 0;
-      padding: 5px 0;
-      text-align: center;
-    }
+
     h1 {
-      font-size: 1.3rem;
+      font-size: 1.6rem;
       color: #2c3e50;
+      text-align: center;
+      margin-bottom: 0.3rem;
     }
+
     p {
-      font-size: 0.92rem;
+      font-size: 1rem;
       color: #555;
+      text-align: center;
+      margin-bottom: 1.2rem;
     }
-    label, select, input[type=range], button {
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
       display: block;
+    }
+
+    input[type=range] {
       width: 100%;
-      margin: 6px 0;
+    }
+
+    select {
+      width: 100%;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
       font-size: 0.9rem;
     }
+
     button {
+      width: 100%;
       background: #3498db;
       color: white;
       border: none;
-      padding: 10px;
+      padding: 12px;
       border-radius: 6px;
       font-weight: bold;
+      font-size: 1rem;
+      margin-top: 10px;
+      cursor: pointer;
       transition: background 0.3s;
     }
+
     button:hover {
       background: #2d77b6;
     }
+
     .weather, .recommendation {
-      margin-top: 12px;
-      padding: 12px;
+      margin-top: 20px;
+      padding: 16px;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      font-size: 0.9rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      font-size: 0.95rem;
     }
+
     .forecast-block {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 0;
+      gap: 8px;
+      padding: 6px 0;
     }
+
     .forecast-block img {
       width: 28px;
       height: 28px;
     }
-    .forecast-block.past {
-      opacity: 0.5;
-    }
+
     .emoji {
       margin-right: 6px;
     }
+
     ul {
-      padding-left: 1rem;
+      padding-left: 1.2rem;
       margin: 0;
     }
+
     .ad-banner {
-      margin-top: 15px;
-      padding: 10px;
+      margin-top: 20px;
+      padding: 12px;
       background: #d184a6;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
       text-align: center;
       color: white;
     }
+
     .ad-banner a {
       color: white;
       font-weight: bold;
@@ -93,15 +127,20 @@
   <h1>Klädtips för barn</h1>
   <p>Anpassade förslag utifrån väder, ålder och om barnet fryser lätt.</p>
 
-  <label for="age">Barnets ålder: <span id="ageVal">3</span> år</label>
-  <input type="range" id="age" min="1" max="12" value="3" />
-
-  <label for="sensitivity">Fryser barnet lätt?</label>
-  <select id="sensitivity">
-    <option value="cold">Ja, fryser lätt</option>
-    <option value="normal" selected>Nej, normalt</option>
-    <option value="warm">Nej, ofta varm</option>
-  </select>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="age">Barnets ålder: <span id="ageVal">3</span> år</label>
+      <input type="range" id="age" min="1" max="12" value="3" />
+    </div>
+    <div class="form-group">
+      <label for="sensitivity">Fryser barnet lätt?</label>
+      <select id="sensitivity">
+        <option value="cold">Ja, fryser lätt</option>
+        <option value="normal" selected>Nej, normalt</option>
+        <option value="warm">Nej, ofta varm</option>
+      </select>
+    </div>
+  </div>
 
   <button onclick="getWeather()">Visa klädtips</button>
 
@@ -131,6 +170,18 @@
       vattenflaska: "💧",
       solkram: "🌞",
       mossa: "🧢"
+    };
+
+    const weatherSymbols = {
+      1: "☀️",
+      2: "🌤️",
+      3: "⛅",
+      4: "☁️",
+      5: "🌦️",
+      6: "🌧️",
+      7: "🌧️",
+      8: "🌨️",
+      9: "🌩️"
     };
 
     const icon = (key, text) => `<li><span class='emoji'>${icons[key] || '👚'}</span>${text}</li>`;
@@ -251,8 +302,11 @@
             windSpeeds.push(wind);
             weatherCodes.push(weatherCode);
 
+            const symbol = weatherSymbols[weatherCode] || "🌡️";
+
             weatherHTML += `
               <div class="forecast-block">
+                <span>${symbol}</span>
                 <span><strong>Kl. ${d.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
               </div>
             `;
