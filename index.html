@@ -63,6 +63,9 @@
       width: 28px;
       height: 28px;
     }
+    .forecast-block.past {
+      opacity: 0.5;
+    }
     .emoji {
       margin-right: 6px;
     }
@@ -152,12 +155,14 @@
 
           const times = data.timeSeries;
           const now = new Date();
-          const localTimes = times.map(t => {
-            const d = new Date(t.validTime);
-            return { d, data: t };
-          }).filter(t => t.d > now && t.d.getHours() >= 6 && t.d.getHours() <= 18);
 
-          const selected = localTimes.slice(0, 3);
+          const targetHours = [8, 12, 16];
+          const selected = targetHours.map(targetHour => {
+            return times.find(t => {
+              const d = new Date(t.validTime);
+              return d.getHours() === targetHour;
+            });
+          }).filter(Boolean);
 
           if (selected.length === 0) {
             throw new Error("Ingen giltig prognos hittades.");
@@ -168,19 +173,21 @@
 
           let temps = [], windSpeeds = [], weatherCodes = [];
 
-          selected.forEach(({ d, data }) => {
+          selected.forEach(data => {
+            const d = new Date(data.validTime);
             const temp = data.parameters.find(p => p.name === "t").values[0];
             const wind = data.parameters.find(p => p.name === "ws").values[0];
             const apparent = (temp - wind * 0.7).toFixed(1);
             const weatherCode = data.parameters.find(p => p.name === "Wsymb2").values[0];
             const iconUrl = weatherIcons[weatherCode] || "";
+            const isPast = d.getTime() < now.getTime();
 
             temps.push(temp);
             windSpeeds.push(wind);
             weatherCodes.push(weatherCode);
 
             weatherHTML += `
-              <div class="forecast-block">
+              <div class="forecast-block${isPast ? ' past' : ''}">
                 <img class="icon" src="${iconUrl}" alt="väderikon">
                 <span><strong>Kl. ${d.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
               </div>
