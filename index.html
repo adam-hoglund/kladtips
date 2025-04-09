@@ -1,257 +1,279 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Klädtips för barn</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 10px;
-      background: #f9fbfd;
-      color: #333;
-      max-width: 480px;
-      overflow-x: hidden;
-    }
-    h1, p {
-      margin: 0;
-      padding: 5px 0;
-      text-align: center;
-    }
-    h1 {
-      font-size: 1.2rem;
-      color: #2c3e50;
-    }
-    p {
-      font-size: 0.9rem;
-      color: #555;
-    }
-    label, select, input[type=range], button {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-      font-size: 0.9rem;
-    }
-    button {
-      background: #3498db;
-      color: white;
-      border: none;
-      padding: 8px;
-      border-radius: 5px;
-    }
-    .weather, .recommendation {
-      margin-top: 10px;
-      padding: 10px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      font-size: 0.9rem;
-    }
-    .forecast-block {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 0;
-    }
-    .forecast-block img {
-      width: 30px;
-      height: 30px;
-    }
-    .emoji {
-      margin-right: 6px;
-    }
-    ul {
-      padding-left: 1rem;
-      margin: 0;
-    }
-    .ad-banner {
-      margin-top: 12px;
-      padding: 8px;
-      background: #fff3cd;
-      border-left: 4px solid #ffc107;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      text-align: center;
-    }
-  </style>
 </head>
 <body>
-  <h1>Klädtips för barn</h1>
-  <p>Anpassade förslag utifrån väder, ålder och om barnet fryser lätt.</p>
+<!-- Innehållet från canvas -->
 
-  <label for="age">Barnets ålder: <span id="ageVal">1</span> år</label>
-  <input type="range" id="age" min="1" max="12" value="6" />
+<!-- FULL KOD MED FÖRBÄTTRAD UX OCH TINGELTANGEL-ANNONS -->
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: #f9fbfd;
+    color: #333;
+    max-width: 480px;
+    overflow-x: hidden;
+  }
+  h1, p {
+    margin: 0;
+    padding: 5px 0;
+    text-align: center;
+  }
+  h1 {
+    font-size: 1.3rem;
+    color: #2c3e50;
+  }
+  p {
+    font-size: 0.92rem;
+    color: #555;
+  }
+  label, select, input[type=range], button {
+    display: block;
+    width: 100%;
+    margin: 6px 0;
+    font-size: 0.9rem;
+  }
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #2d77b6;
+  }
+  .weather, .recommendation {
+    margin-top: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    font-size: 0.9rem;
+  }
+  .forecast-block {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+  }
+  .forecast-block img {
+    width: 28px;
+    height: 28px;
+  }
+  .emoji {
+    margin-right: 6px;
+  }
+  ul {
+    padding-left: 1rem;
+    margin: 0;
+  }
+  .ad-banner {
+    margin-top: 15px;
+    padding: 10px;
+    background: #d184a6;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    color: white;
+  }
+  .ad-banner a {
+    color: white;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  .ad-banner img {
+    max-width: 100px;
+    margin-bottom: 6px;
+  }
+</style>
 
-  <label for="sensitivity">Fryser barnet lätt?</label>
-  <select id="sensitivity">
-    <option value="cold">Ja, fryser lätt</option>
-    <option value="normal" selected>Nej, normalt</option>
-    <option value="warm">Nej, ofta varm</option>
-  </select>
+<h1>Klädtips för barn</h1>
+<p>Anpassade förslag utifrån väder, ålder och om barnet fryser lätt.</p>
 
-  <button onclick="getWeather()">Visa klädtips</button>
+<label for="age">Barnets ålder: <span id="ageVal">3</span> år</label>
+<input type="range" id="age" min="1" max="12" value="3" />
 
-  <div class="weather" id="weatherBox" style="display:none"></div>
-  <div class="recommendation" id="recBox" style="display:none"></div>
+<label for="sensitivity">Fryser barnet lätt?</label>
+<select id="sensitivity">
+  <option value="cold">Ja, fryser lätt</option>
+  <option value="normal" selected>Nej, normalt</option>
+  <option value="warm">Nej, ofta varm</option>
+</select>
 
-  <div class="ad-banner">
-    🎉 Tips! Planerar du barnkalas? Spana in
-    <a href="https://tingeltangel.se" target="_blank">dekorationer hos Tingeltangel.se</a>
-  </div>
+<button onclick="getWeather()">Visa klädtips</button>
 
-  <script>
-    const weatherIcons = {
-      1: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-sunny.svg",
-      2: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-cloudy.svg",
-      3: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
-      4: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
-      5: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-showers.svg",
-      6: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-rain.svg",
-      7: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-thunderstorm.svg",
-      8: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-snow.svg",
-      9: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-fog.svg"
-    };
+<div class="weather" id="weatherBox" style="display:none"></div>
+<div class="recommendation" id="recBox" style="display:none"></div>
 
-    const icons = {
-      understall: "🩲",
-      fleece: "🧥",
-      vinteroverall: "🧣",
-      jacka: "🧥",
-      tshirt: "👕",
-      solhatt: "🧢",
-      regnklader: "🌧️",
-      vattenflaska: "💧",
-      solkram: "🌞",
-      mossa: "🧢"
-    };
+<div class="ad-banner">
+  <img src="https://d3dnwnveix5428.cloudfront.net/store_25d41dcb-3663-4a31-8b96-8c8487317255/images/62xGH5chklZjUwJ7KbMhsPa5CddiXqEtAieQ12Cs.png" alt="Tingeltangel logotyp">
+  🎉 Tips! Planerar du barnkalas?<br>
+  <a href="https://tingeltangel.se" target="_blank">Kolla in dekorationer hos Tingeltangel.se</a>
+</div>
 
-    const icon = (key, text) => `<li><span class='emoji'>${icons[key] || '👚'}</span>${text}</li>`;
+<script>
+  const weatherIcons = {
+    1: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-sunny.svg",
+    2: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-cloudy.svg",
+    3: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
+    4: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
+    5: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-showers.svg",
+    6: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-rain.svg",
+    7: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-thunderstorm.svg",
+    8: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-snow.svg",
+    9: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-fog.svg"
+  };
 
-    document.getElementById("age").addEventListener("input", function (e) {
-      document.getElementById("ageVal").textContent = e.target.value;
-    });
+  const icons = {
+    understall: "🩲",
+    fleece: "🧥",
+    vinteroverall: "🧣",
+    jacka: "🧥",
+    tshirt: "👕",
+    solhatt: "🧢",
+    regnklader: "🌧️",
+    vattenflaska: "💧",
+    solkram: "🌞",
+    mossa: "🧢"
+  };
 
-    async function getWeather() {
-      if (!navigator.geolocation) {
-        alert("Din webbläsare stöder inte platsinfo.");
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude.toFixed(4);
-        const lon = pos.coords.longitude.toFixed(4);
-        const smhiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`;
+  const icon = (key, text) => `<li><span class='emoji'>${icons[key] || '👚'}</span>${text}</li>`;
 
-        try {
-          const res = await fetch(smhiUrl);
-          const data = await res.json();
-          const times = data.timeSeries;
-          const getForecastForHour = (hour) =>
-            times.find((t) => {
-              const d = new Date(t.validTime);
-              return d.getHours() === hour && d > new Date();
-            });
+  document.getElementById("age").addEventListener("input", function (e) {
+    document.getElementById("ageVal").textContent = e.target.value;
+  });
 
-          const hours = [8, 12, 16];
-          let weatherHTML = "<strong>SMHI-prognos:</strong><br>";
-          let temps = [],
-            windSpeeds = [],
-            weatherCodes = [];
+  async function getWeather() {
+    if (!navigator.geolocation) {
+      alert("Din webbläsare stöder inte platsinfo.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const lat = pos.coords.latitude.toFixed(4);
+      const lon = pos.coords.longitude.toFixed(4);
+      const smhiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`;
 
-          hours.forEach((hour) => {
-            const forecast = getForecastForHour(hour);
-            if (forecast) {
-              const date = new Date(forecast.validTime);
-              const temp = forecast.parameters.find((p) => p.name === "t").values[0];
-              const wind = forecast.parameters.find((p) => p.name === "ws").values[0];
-              const apparent = (temp - wind * 0.7).toFixed(1);
-              const weatherCode = forecast.parameters.find((p) => p.name === "Wsymb2").values[0];
-              const iconUrl = weatherIcons[weatherCode] || "";
-
-              temps.push(temp);
-              windSpeeds.push(wind);
-              weatherCodes.push(weatherCode);
-
-              weatherHTML += `
-                <div class="forecast-block">
-                  <img class="icon" src="${iconUrl}" alt="väderikon" />
-                  <span><strong>${date.getHours()}:00</strong> – ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
-                </div>`;
-            }
+      try {
+        const res = await fetch(smhiUrl);
+        const data = await res.json();
+        const times = data.timeSeries;
+        const getForecastForHour = (hour) =>
+          times.find((t) => {
+            const d = new Date(t.validTime);
+            return d.getHours() === hour && d > new Date();
           });
 
-          document.getElementById("weatherBox").style.display = "block";
-          document.getElementById("weatherBox").innerHTML = weatherHTML;
-          showRecommendation(temps, windSpeeds, weatherCodes);
-        } catch (err) {
-          console.error(err);
-          alert("Fel vid hämtning av väder från SMHI.");
-        }
-      });
+        const hours = [8, 12, 16];
+        let weatherHTML = "<strong>SMHI-prognos:</strong><br>";
+        let temps = [], windSpeeds = [], weatherCodes = [];
+
+        hours.forEach((hour) => {
+          const forecast = getForecastForHour(hour);
+          if (forecast) {
+            const date = new Date(forecast.validTime);
+            const temp = forecast.parameters.find((p) => p.name === "t").values[0];
+            const wind = forecast.parameters.find((p) => p.name === "ws").values[0];
+            const apparent = (temp - wind * 0.7).toFixed(1);
+            const weatherCode = forecast.parameters.find((p) => p.name === "Wsymb2").values[0];
+            const iconUrl = weatherIcons[weatherCode] || "";
+
+            temps.push(temp);
+            windSpeeds.push(wind);
+            weatherCodes.push(weatherCode);
+
+            weatherHTML += `<div class="forecast-block">
+              <img class="icon" src="${iconUrl}" alt="väderikon" />
+              <span><strong>${date.getHours()}:00</strong> – ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
+            </div>`;
+          }
+        });
+
+        document.getElementById("weatherBox").style.display = "block";
+        document.getElementById("weatherBox").innerHTML = weatherHTML;
+        showRecommendation(temps, windSpeeds, weatherCodes);
+      } catch (err) {
+        console.error(err);
+        alert("Fel vid hämtning av väder från SMHI.");
+      }
+    });
+  }
+
+  function showRecommendation(temps, winds, codes) {
+    const age = parseInt(document.getElementById("age").value);
+    const sensitivity = document.getElementById("sensitivity").value;
+    const isToddler = age < 4;
+
+    let adjustment = sensitivity === "cold" ? -2 : sensitivity === "warm" ? 2 : 0;
+    let apparentTemps = temps.map((t, i) => t - winds[i] * 0.7);
+    let avgApparentTemp = apparentTemps.reduce((a, b) => a + b, 0) / apparentTemps.length + adjustment;
+    let minTemp = Math.min(...apparentTemps);
+    let maxTemp = Math.max(...apparentTemps);
+    let rainExpected = codes.some((code) => code >= 5 && code <= 7);
+
+    let rec = "<ul>";
+    let summaryTips = [];
+
+    if (avgApparentTemp < 0) {
+      rec += icon("understall", "Underställ i ull eller bomull");
+      rec += isToddler ? icon("fleece", "Fleeceoverall eller fleece + vindoverall") : icon("fleece", "Fleece eller annan värmande mellanlager");
+      rec += icon("vinteroverall", "Vinteroverall eller jacka + termobyxor");
+      rec += icon("mossa", "Mössa, vantar, fodrade skor");
+      summaryTips.push("Klä i flera varma lager");
+    } else if (avgApparentTemp < 5) {
+      rec += icon("understall", "Långärmad tröja och långkalsonger");
+      rec += icon("fleece", isToddler ? "Fleeceoverall" : "Fleece eller mjuk jacka");
+      rec += icon("jacka", "Skalplagg eller vindjacka");
+      rec += icon("mossa", "Mössa, vantar, vanliga skor");
+      summaryTips.push("Tänk lager-på-lager");
+    } else if (avgApparentTemp < 12) {
+      rec += icon("fleece", "Långärmad tröja och byxor");
+      rec += icon("jacka", "Tunn jacka eller hoodie");
+      if (isToddler) rec += icon("mossa", "Tunn mössa vid behov");
+    } else if (avgApparentTemp < 20) {
+      rec += icon("tshirt", "T-shirt och långbyxor");
+      rec += icon("jacka", "Lätt jacka eller tröja att ta av");
+    } else {
+      rec += icon("tshirt", "T-shirt och shorts");
+      rec += icon("solhatt", "Solhatt eller keps");
+      summaryTips.push("Skydda mot sol & värme");
     }
 
-    function showRecommendation(temps, winds, codes) {
-      const age = parseInt(document.getElementById("age").value);
-      const sensitivity = document.getElementById("sensitivity").value;
-      const isToddler = age < 4;
-
-      let adjustment = sensitivity === "cold" ? -2 : sensitivity === "warm" ? 2 : 0;
-      let apparentTemps = temps.map((t, i) => t - winds[i] * 0.7);
-      let avgApparentTemp = apparentTemps.reduce((a, b) => a + b, 0) / apparentTemps.length + adjustment;
-      let minTemp = Math.min(...apparentTemps);
-      let maxTemp = Math.max(...apparentTemps);
-      let rainExpected = codes.some((code) => code >= 5 && code <= 7);
-
-      let rec = "<ul>";
-      let summaryTips = [];
-
-      if (avgApparentTemp < 0) {
-        rec += icon("understall", "Underställ i ull eller bomull");
-        rec += isToddler ? icon("fleece", "Fleeceoverall eller fleece + vindoverall") : icon("fleece", "Fleece eller annan värmande mellanlager");
-        rec += icon("vinteroverall", "Vinteroverall eller jacka + termobyxor");
-        rec += icon("mossa", "Mössa, vantar, fodrade skor");
-        summaryTips.push("Klä i flera varma lager");
-      } else if (avgApparentTemp < 5) {
-        rec += icon("understall", "Långärmad tröja och långkalsonger");
-        rec += icon("fleece", isToddler ? "Fleeceoverall" : "Fleece eller mjuk jacka");
-        rec += icon("jacka", "Skalplagg eller vindjacka");
-        rec += icon("mossa", "Mössa, vantar, vanliga skor");
-        summaryTips.push("Tänk lager-på-lager");
-      } else if (avgApparentTemp < 12) {
-        rec += icon("fleece", "Långärmad tröja och byxor");
-        rec += icon("jacka", "Tunn jacka eller hoodie");
-        if (isToddler) rec += icon("mossa", "Tunn mössa vid behov");
-      } else if (avgApparentTemp < 20) {
-        rec += icon("tshirt", "T-shirt och långbyxor");
-        rec += icon("jacka", "Lätt jacka eller tröja att ta av");
-      } else {
-        rec += icon("tshirt", "T-shirt och shorts");
-        rec += icon("solhatt", "Solhatt eller keps");
-        summaryTips.push("Skydda mot sol & värme");
-      }
-
-      if (rainExpected) {
-        rec += icon("regnklader", "Regnkläder och stövlar");
-        summaryTips.push("Packa regnkläder");
-      }
-      if (maxTemp - minTemp > 6) {
-        rec += icon("jacka", "Lager-på-lager – kläder att ta av sig");
-        summaryTips.push("Stor temperaturskillnad idag");
-      }
-      if (avgApparentTemp > 20) {
-        rec += icon("vattenflaska", "Vattenflaska med");
-        rec += icon("solkram", "Smörj in med solkräm");
-      }
-
-      rec += "</ul>";
-
-      document.getElementById("recBox").style.display = "block";
-      document.getElementById("recBox").innerHTML = `
-        <strong>Dagens tips:</strong> ${summaryTips.join(" · ")}<br><br>
-        <strong>Klädtips för ${age}-åring:</strong><br>
-        ${rec}
-      `;
+    if (rainExpected) {
+      rec += icon("regnklader", "Regnkläder och stövlar");
+      summaryTips.push("Packa regnkläder");
     }
-  </script>
+    if (maxTemp - minTemp > 6) {
+      rec += icon("jacka", "Lager-på-lager – kläder att ta av sig");
+      summaryTips.push("Stor temperaturskillnad idag");
+    }
+    if (avgApparentTemp > 20) {
+      rec += icon("vattenflaska", "Vattenflaska med");
+      rec += icon("solkram", "Smörj in med solkräm");
+    }
+
+    rec += "</ul>";
+
+    document.getElementById("recBox").style.display = "block";
+    document.getElementById("recBox").innerHTML = `
+      <strong>Dagens tips:</strong> ${summaryTips.join(" · ")}<br><br>
+      <strong>Klädtips för ${age}-åring:</strong><br>
+      ${rec}
+    `;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("age").value = 3;
+    document.getElementById("ageVal").textContent = 3;
+  });
+</script>
 </body>
 </html>
