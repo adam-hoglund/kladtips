@@ -114,101 +114,89 @@
   </div>
 
   <script>
-    let currentLat = null;
-    let currentLon = null;
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("age").addEventListener("input", (e) => {
+        document.getElementById("ageVal").textContent = e.target.value;
+      });
+    });
 
-    const weatherIcons = {
-      1: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-sunny.svg",
-      2: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-day-cloudy.svg",
-      3: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
-      4: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-cloudy.svg",
-      5: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-showers.svg",
-      6: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-rain.svg",
-      7: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-thunderstorm.svg",
-      8: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-snow.svg",
-      9: "https://cdn.jsdelivr.net/gh/erikflowers/weather-icons/svg/wi-fog.svg"
+    const icons = {
+      understall: "🩲",
+      fleece: "🧥",
+      vinteroverall: "🧣",
+      jacka: "🧥",
+      tshirt: "👕",
+      solhatt: "🧢",
+      regnklader: "🌧️",
+      vattenflaska: "💧",
+      solkram: "🌞",
+      mossa: "🧢"
     };
 
-    function getWeather() {
-      if (!navigator.geolocation) {
-        alert("Din webbläsare stöder inte platsinfo.");
-        return;
+    const icon = (key, text) => `<li><span class='emoji'>${icons[key] || '👚'}</span>${text}</li>`;
+
+    function showRecommendation(temps, winds, codes) {
+      const age = parseInt(document.getElementById("age").value);
+      const sensitivity = document.getElementById("sensitivity").value;
+      const isToddler = age < 4;
+
+      let adjustment = sensitivity === "cold" ? -2 : sensitivity === "warm" ? 2 : 0;
+      let apparentTemps = temps.map((t, i) => t - winds[i] * 0.7);
+      let avgApparentTemp = apparentTemps.reduce((a, b) => a + b, 0) / apparentTemps.length + adjustment;
+      let minTemp = Math.min(...apparentTemps);
+      let maxTemp = Math.max(...apparentTemps);
+      let rainExpected = codes.some((code) => code >= 5 && code <= 7);
+
+      let rec = "<ul>";
+      let summaryTips = [];
+
+      if (avgApparentTemp < 0) {
+        rec += icon("understall", "Underställ i ull eller bomull");
+        rec += isToddler ? icon("fleece", "Fleeceoverall eller fleece + vindoverall") : icon("fleece", "Fleece eller annan värmande mellanlager");
+        rec += icon("vinteroverall", "Vinteroverall eller jacka + termobyxor");
+        rec += icon("mossa", "Mössa, vantar, fodrade skor");
+        summaryTips.push("Klä i flera varma lager");
+      } else if (avgApparentTemp < 5) {
+        rec += icon("understall", "Långärmad tröja och långkalsonger");
+        rec += icon("fleece", isToddler ? "Fleeceoverall" : "Fleece eller mjuk jacka");
+        rec += icon("jacka", "Skalplagg eller vindjacka");
+        rec += icon("mossa", "Mössa, vantar, vanliga skor");
+        summaryTips.push("Tänk lager-på-lager");
+      } else if (avgApparentTemp < 12) {
+        rec += icon("fleece", "Långärmad tröja och byxor");
+        rec += icon("jacka", "Tunn jacka eller hoodie");
+        if (isToddler) rec += icon("mossa", "Tunn mössa vid behov");
+      } else if (avgApparentTemp < 20) {
+        rec += icon("tshirt", "T-shirt och långbyxor");
+        rec += icon("jacka", "Lätt jacka eller tröja att ta av");
+      } else {
+        rec += icon("tshirt", "T-shirt och shorts");
+        rec += icon("solhatt", "Solhatt eller keps");
+        summaryTips.push("Skydda mot sol & värme");
       }
 
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude.toFixed(4);
-        const lon = pos.coords.longitude.toFixed(4);
-        currentLat = lat;
-        currentLon = lon;
+      if (rainExpected) {
+        rec += icon("regnklader", "Regnkläder och stövlar");
+        summaryTips.push("Packa regnkläder");
+      }
+      if (maxTemp - minTemp > 6) {
+        rec += icon("jacka", "Lager-på-lager – kläder att ta av sig");
+        summaryTips.push("Stor temperaturskillnad idag");
+      }
+      if (avgApparentTemp > 20) {
+        rec += icon("vattenflaska", "Vattenflaska med");
+        rec += icon("solkram", "Smörj in med solkräm");
+      }
 
-        const smhiUrl = `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`;
-        const locationUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+      rec += "</ul>";
 
-        try {
-          const [res, locRes] = await Promise.all([
-            fetch(smhiUrl),
-            fetch(locationUrl)
-          ]);
-          const data = await res.json();
-          const locData = await locRes.json();
-          const place = locData.address.city || locData.address.town || locData.address.village || "din plats";
-
-          const times = data.timeSeries;
-          const now = new Date();
-
-          const targetHours = [8, 12, 16];
-          const selected = targetHours.map(targetHour => {
-            return times.find(t => {
-              const d = new Date(t.validTime);
-              return d.getHours() === targetHour;
-            });
-          }).filter(Boolean);
-
-          if (selected.length === 0) {
-            throw new Error("Ingen giltig prognos hittades.");
-          }
-
-          const todayStr = now.toLocaleDateString('sv-SE');
-          let weatherHTML = `<strong>SMHI-prognos för ${place}, ${todayStr}:</strong><br>`;
-
-          let temps = [], windSpeeds = [], weatherCodes = [];
-
-          selected.forEach(data => {
-            const d = new Date(data.validTime);
-            const temp = data.parameters.find(p => p.name === "t").values[0];
-            const wind = data.parameters.find(p => p.name === "ws").values[0];
-            const apparent = (temp - wind * 0.7).toFixed(1);
-            const weatherCode = data.parameters.find(p => p.name === "Wsymb2").values[0];
-            const iconUrl = weatherIcons[weatherCode] || "";
-            const isPast = d.getTime() < now.getTime();
-
-            temps.push(temp);
-            windSpeeds.push(wind);
-            weatherCodes.push(weatherCode);
-
-            weatherHTML += `
-              <div class="forecast-block${isPast ? ' past' : ''}">
-                <img class="icon" src="${iconUrl}" alt="väderikon">
-                <span><strong>Kl. ${d.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
-              </div>
-            `;
-          });
-
-          document.getElementById("weatherBox").style.display = "block";
-          document.getElementById("weatherBox").innerHTML = weatherHTML;
-
-          showRecommendation(temps, windSpeeds, weatherCodes);
-        } catch (err) {
-          console.error(err);
-          alert("Fel vid hämtning av väder eller platsinformation.");
-        }
-      });
+      document.getElementById("recBox").style.display = "block";
+      document.getElementById("recBox").innerHTML = `
+        <strong>Dagens tips:</strong> ${summaryTips.join(" · ")}<br><br>
+        <strong>Klädtips för ${age}-åring:</strong><br>
+        ${rec}
+      `;
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("age").value = 3;
-      document.getElementById("ageVal").textContent = 3;
-    });
   </script>
 </body>
 </html>
