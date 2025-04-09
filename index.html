@@ -152,40 +152,39 @@
 
           const times = data.timeSeries;
           const now = new Date();
+          const localTimes = times.map(t => {
+            const d = new Date(t.validTime);
+            return { d, data: t };
+          }).filter(t => t.d > now && t.d.getHours() >= 6 && t.d.getHours() <= 18);
+
+          const selected = localTimes.slice(0, 3);
+
+          if (selected.length === 0) {
+            throw new Error("Ingen giltig prognos hittades.");
+          }
+
           const todayStr = now.toLocaleDateString('sv-SE');
-
-          const getForecastForHour = (hour) => {
-            return times.find(t => {
-              const d = new Date(t.validTime);
-              return d.getHours() === hour && d.getDate() === now.getDate();
-            });
-          };
-
-          const hours = [8, 12, 16];
           let weatherHTML = `<strong>SMHI-prognos för ${place}, ${todayStr}:</strong><br>`;
+
           let temps = [], windSpeeds = [], weatherCodes = [];
 
-          hours.forEach(hour => {
-            const forecast = getForecastForHour(hour);
-            if (forecast) {
-              const date = new Date(forecast.validTime);
-              const temp = forecast.parameters.find(p => p.name === "t").values[0];
-              const wind = forecast.parameters.find(p => p.name === "ws").values[0];
-              const apparent = (temp - wind * 0.7).toFixed(1);
-              const weatherCode = forecast.parameters.find(p => p.name === "Wsymb2").values[0];
-              const iconUrl = weatherIcons[weatherCode] || "";
+          selected.forEach(({ d, data }) => {
+            const temp = data.parameters.find(p => p.name === "t").values[0];
+            const wind = data.parameters.find(p => p.name === "ws").values[0];
+            const apparent = (temp - wind * 0.7).toFixed(1);
+            const weatherCode = data.parameters.find(p => p.name === "Wsymb2").values[0];
+            const iconUrl = weatherIcons[weatherCode] || "";
 
-              temps.push(temp);
-              windSpeeds.push(wind);
-              weatherCodes.push(weatherCode);
+            temps.push(temp);
+            windSpeeds.push(wind);
+            weatherCodes.push(weatherCode);
 
-              weatherHTML += `
-                <div class="forecast-block">
-                  <img class="icon" src="${iconUrl}" alt="väderikon">
-                  <span><strong>Kl. ${date.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
-                </div>
-              `;
-            }
+            weatherHTML += `
+              <div class="forecast-block">
+                <img class="icon" src="${iconUrl}" alt="väderikon">
+                <span><strong>Kl. ${d.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
+              </div>
+            `;
           });
 
           document.getElementById("weatherBox").style.display = "block";
@@ -199,7 +198,6 @@
       });
     }
 
-    // Förval ålder på 3 år
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("age").value = 3;
       document.getElementById("ageVal").textContent = 3;
