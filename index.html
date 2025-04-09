@@ -86,15 +86,13 @@
     }
 
     .forecast-block {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 6px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 0;
-    }
-
-    .forecast-block img {
-      width: 28px;
-      height: 28px;
+      gap: 10px;
+      margin-bottom: 4px;
     }
 
     .emoji {
@@ -102,8 +100,40 @@
     }
 
     ul {
-      padding-left: 1.2rem;
+      padding-left: 0;
       margin: 0;
+      list-style: none;
+    }
+
+    .recommendation ul li[data-type] {
+      margin-bottom: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .recommendation ul li[data-type="kyla"] {
+      background-color: #e3f2fd;
+      border-left: 4px solid #42a5f5;
+    }
+
+    .recommendation ul li[data-type="regn"] {
+      background-color: #e1f5fe;
+      border-left: 4px solid #29b6f6;
+    }
+
+    .recommendation ul li[data-type="sol"] {
+      background-color: #fff8e1;
+      border-left: 4px solid #fbc02d;
+    }
+
+    .recommendation ul li[data-type="mörk"] {
+      background-color: #ede7f6;
+      border-left: 4px solid #7e57c2;
+    }
+
+    .recommendation ul li[data-type="vattentåligt"] {
+      background-color: #f1f8e9;
+      border-left: 4px solid #7cb342;
     }
 
     .ad-banner {
@@ -169,7 +199,10 @@
       regnklader: "🌧️",
       vattenflaska: "💧",
       solkram: "🌞",
-      mossa: "🧢"
+      mossa: "🧢",
+      reflexer: "✨",
+      fodrade_stovlar: "🥾",
+      vattentata_plagg: "🧵"
     };
 
     const weatherSymbols = {
@@ -179,14 +212,14 @@
       4: "☁️",
       5: "🌦️",
       6: "🌧️",
-      7: "🌧️",
-      8: "🌨️",
-      9: "🌩️"
+      7: "🌨️",
+      8: "❄️",
+      9: "⛈"
     };
 
-    const icon = (key, text) => `<li><span class='emoji'>${icons[key] || '👚'}</span>${text}</li>`;
+    const icon = (key, text, type = "") => `<li data-type='${type}'><span class='emoji'>${icons[key] || '👚'}</span> ${text}</li>`;
 
-    function showRecommendation(temps, winds, codes) {
+    function showRecommendation(temps, winds, codes, fullForecast) {
       const age = parseInt(document.getElementById("age").value);
       const sensitivity = document.getElementById("sensitivity").value;
       const isToddler = age < 4;
@@ -201,42 +234,73 @@
       let rec = "<ul>";
       let summaryTips = [];
 
+      const pastRain = fullForecast.slice(0, 6).some(entry => {
+        const rainCode = entry.parameters.find(p => p.name === "Wsymb2").values[0];
+        return rainCode >= 5 && rainCode <= 7;
+      });
+
+      const snowRisk = fullForecast.some(entry => {
+        const code = entry.parameters.find(p => p.name === "Wsymb2").values[0];
+        return code === 8;
+      });
+      const slask = snowRisk && minTemp > -2 && maxTemp >= 0;
+
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const isDarkSeason = (month < 3 || month > 10);
+      const needsReflex = isDarkSeason;
+
       if (avgApparentTemp < 0) {
-        rec += icon("understall", "Underställ i ull eller bomull");
-        rec += isToddler ? icon("fleece", "Fleeceoverall eller fleece + vindoverall") : icon("fleece", "Fleece eller annan värmande mellanlager");
-        rec += icon("vinteroverall", "Vinteroverall eller jacka + termobyxor");
-        rec += icon("mossa", "Mössa, vantar, fodrade skor");
+        rec += icon("understall", "Underställ i ull eller bomull", "kyla");
+        rec += isToddler ? icon("fleece", "Fleeceoverall eller fleece + vindoverall", "kyla") : icon("fleece", "Fleece eller annan värmande mellanlager", "kyla");
+        rec += icon("vinteroverall", "Vinteroverall eller jacka + termobyxor", "kyla");
+        rec += icon("mossa", "Mössa, vantar, fodrade skor", "kyla");
         summaryTips.push("Klä i flera varma lager");
       } else if (avgApparentTemp < 5) {
-        rec += icon("understall", "Långärmad tröja och långkalsonger");
-        rec += icon("fleece", isToddler ? "Fleeceoverall" : "Fleece eller mjuk jacka");
-        rec += icon("jacka", "Skalplagg eller vindjacka");
-        rec += icon("mossa", "Mössa, vantar, vanliga skor");
+        rec += icon("understall", "Långärmad tröja och långkalsonger", "kyla");
+        rec += icon("fleece", isToddler ? "Fleeceoverall" : "Fleece eller mjuk jacka", "kyla");
+        rec += icon("jacka", "Skalplagg eller vindjacka", "kyla");
+        rec += icon("mossa", "Mössa, vantar, vanliga skor", "kyla");
         summaryTips.push("Tänk lager-på-lager");
       } else if (avgApparentTemp < 12) {
-        rec += icon("fleece", "Långärmad tröja och byxor");
-        rec += icon("jacka", "Tunn jacka eller hoodie");
-        if (isToddler) rec += icon("mossa", "Tunn mössa vid behov");
+        rec += icon("fleece", "Långärmad tröja och byxor", "kyla");
+        rec += icon("jacka", "Tunn jacka eller hoodie", "kyla");
+        if (isToddler) rec += icon("mossa", "Tunn mössa vid behov", "kyla");
       } else if (avgApparentTemp < 20) {
-        rec += icon("tshirt", "T-shirt och långbyxor");
-        rec += icon("jacka", "Lätt jacka eller tröja att ta av");
+        rec += icon("tshirt", "T-shirt och långbyxor", "sol");
+        rec += icon("jacka", "Lätt jacka eller tröja att ta av", "sol");
       } else {
-        rec += icon("tshirt", "T-shirt och shorts");
-        rec += icon("solhatt", "Solhatt eller keps");
+        rec += icon("tshirt", "T-shirt och shorts", "sol");
+        rec += icon("solhatt", "Solhatt eller keps", "sol");
         summaryTips.push("Skydda mot sol & värme");
       }
 
+      if (slask) {
+        rec += icon("fodrade_stovlar", "Fodrade regnstövlar och vattentäta kläder", "vattentåligt");
+        summaryTips.push("Risk för slask");
+      } else if (pastRain) {
+        rec += icon("vattentata_plagg", "Vattentåliga ytterkläder – marken är blöt", "vattentåligt");
+        summaryTips.push("Blött i marken");
+      }
+
       if (rainExpected) {
-        rec += icon("regnklader", "Regnkläder och stövlar");
+        rec += icon("regnklader", "Regnkläder och stövlar", "regn");
         summaryTips.push("Packa regnkläder");
       }
+
       if (maxTemp - minTemp > 6) {
-        rec += icon("jacka", "Lager-på-lager – kläder att ta av sig");
+        rec += icon("jacka", "Lager-på-lager – kläder att ta av sig", "kyla");
         summaryTips.push("Stor temperaturskillnad idag");
       }
+
       if (avgApparentTemp > 20) {
-        rec += icon("vattenflaska", "Vattenflaska med");
-        rec += icon("solkram", "Smörj in med solkräm");
+        rec += icon("vattenflaska", "Vattenflaska med", "sol");
+        rec += icon("solkram", "Smörj in med solkräm", "sol");
+      }
+
+      if (needsReflex) {
+        rec += icon("reflexer", "Reflexväst eller reflexband", "mörk");
+        summaryTips.push("Mörkt ute – tänk på reflexer");
       }
 
       rec += "</ul>";
@@ -249,7 +313,7 @@
       `;
     }
 
-    function getWeather() {
+    async function getWeather() {
       if (!navigator.geolocation) {
         alert("Din webbläsare stöder inte platsinfo.");
         return;
@@ -297,16 +361,15 @@
             const wind = data.parameters.find(p => p.name === "ws").values[0];
             const apparent = (temp - wind * 0.7).toFixed(1);
             const weatherCode = data.parameters.find(p => p.name === "Wsymb2").values[0];
+            const symbol = weatherSymbols[weatherCode] || "❓";
 
             temps.push(temp);
             windSpeeds.push(wind);
             weatherCodes.push(weatherCode);
 
-            const symbol = weatherSymbols[weatherCode] || "🌡️";
-
             weatherHTML += `
               <div class="forecast-block">
-                <span>${symbol}</span>
+                <span style="font-size: 1.4rem;">${symbol}</span>
                 <span><strong>Kl. ${d.getHours()}:00</strong>: ${temp} °C (känns som ${apparent} °C), Vind: ${wind} m/s</span>
               </div>
             `;
@@ -315,7 +378,7 @@
           document.getElementById("weatherBox").style.display = "block";
           document.getElementById("weatherBox").innerHTML = weatherHTML;
 
-          showRecommendation(temps, windSpeeds, weatherCodes);
+          showRecommendation(temps, windSpeeds, weatherCodes, times);
         } catch (err) {
           console.error(err);
           alert("Fel vid hämtning av väder eller platsinformation.");
